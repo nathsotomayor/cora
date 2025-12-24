@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Storytelling visual del poema 'Quiero hacer contigo' de Elvira Sastre. Una experiencia inmersiva donde cada verso cobra vida con imágenes que cuentan una historia de amor.">
+    <meta name="author" content="Basado en el poema de Elvira Sastre">
+    <meta name="theme-color" content="#191970">
+
+    <title>Quiero hacer contigo - Elvira Sastre | Storytelling Visual</title>
+
+    <!-- Preconnect para optimizar carga de APIs externas -->
+    <link rel="preconnect" href="https://api.unsplash.com">
+    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="preconnect" href="https://gist.githubusercontent.com">
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+    <!-- Pantalla de carga inicial con corazón animado -->
+    <div class="splash-screen" id="splashScreen">
+        <svg class="splash-heart" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path class="splash-heart__path"
+                  d="M50,85 C50,85 15,60 15,40 C15,28 23,20 33,20 C40,20 46,24 50,30 C54,24 60,20 67,20 C77,20 85,28 85,40 C85,60 50,85 50,85 Z"
+                  fill="none"
+                  stroke="#9F9FEA"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"/>
+        </svg>
+    </div>
+
+    <!-- Cursor personalizado -->
+    <div class="cursor">
+        <div class="cursor__pointer"></div>
+        <div class="cursor__follower"></div>
+    </div>
+
+    <!-- Estado de carga -->
+    <div class="loading" id="loading" aria-live="polite" aria-label="Cargando contenido">
+        <div class="loading__spinner"></div>
+        <p class="loading__text">Descubriendo instantes...</p>
+    </div>
+
+    <!-- Controles de navegación -->
+    <nav class="nav-controls" id="navControls">
+        <button class="nav-btn nav-btn--prev" id="prevBtn" aria-label="Anterior">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 15l-6-6-6 6"/>
+            </svg>
+        </button>
+        <button class="nav-btn nav-btn--next" id="nextBtn" aria-label="Siguiente">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"/>
+            </svg>
+        </button>
+        <div class="nav-counter" id="navCounter" aria-live="polite">
+            <span class="nav-counter__current">1</span>
+            <span class="nav-counter__separator">/</span>
+            <span class="nav-counter__total">0</span>
+        </div>
+    </nav>
+
+    <!-- Contenedor principal fullscreen -->
+    <main class="fullscreen-container" id="fullscreenContainer" role="main">
+        <!-- Las secciones fullscreen se inyectarán dinámicamente aquí -->
+    </main>
+
+    <!-- Hint de navegación (se oculta después del primer scroll) -->
+    <div class="scroll-hint" id="scrollHint">
+        <p class="scroll-hint__text">Desliza o usa las flechas</p>
+        <svg class="scroll-hint__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M19 12l-7 7-7-7"/>
+        </svg>
+    </div>
+
+    <!-- Scripts - Data de respaldo primero, luego la aplicación principal -->
+    <script src="data/data-fallback.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
