@@ -1,13 +1,14 @@
 /**
  * INSTANTES COTIDIANOS - Aplicación Fullscreen
- * Experiencia inmersiva: cada pantalla muestra 1 imagen + 1 frase
+ * Experiencia inmersiva de poesía con versos del poema "Quiero hacer contigo" de Elvira Sastre
  * Navegación vertical fluida con scroll snap
  *
  * Arquitectura:
- * - Sistema híbrido API-First con respaldo estático (Plan A → Plan B)
+ * - Sistema híbrido con respaldo estático para textos
+ * - Fondos degradados animados con figuras SVG
+ * - Imágenes de fondo sutiles en slides seleccionados
  * - Cursor personalizado con física Lerp
  * - Navegación con scroll, teclado y botones
- * - Sin Masonry, diseño fullscreen
  */
 
 // ========================================
@@ -57,19 +58,25 @@ const CONFIG = {
 // ========================================
 
 const AppState = {
-    images: [],
     quotes: [],
-    sections: [], // Array de pares {image, quote}
+    sections: [],
     currentIndex: 0,
     totalSections: 0,
+    isNavigating: false, // Flag para prevenir actualizaciones durante navegación programática
     usingFallback: {
-        images: false,
         quotes: false
     },
     cursor: {
         pointer: { x: 0, y: 0 },
         follower: { x: 0, y: 0 },
         isHovering: false
+    },
+    dom: {
+        container: null,
+        navCounterCurrent: null,
+        navCounterTotal: null,
+        prevBtn: null,
+        nextBtn: null
     },
     isInitialized: false
 };
@@ -80,15 +87,6 @@ const AppState = {
 
 function lerp(start, end, factor) {
     return start + (end - start) * factor;
-}
-
-function shuffleArray(array) {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
 }
 
 async function fetchWithTimeout(url, options = {}, timeout = 5000) {
@@ -161,30 +159,13 @@ async function fetchImagesFromUnsplash() {
     }
 }
 
-async function fetchImagesFromLocal() {
-    console.log('[Plan B - Imágenes] Cargando imágenes locales...');
-
-    try {
-        if (typeof FALLBACK_IMAGES === 'undefined') {
-            throw new Error('Datos de respaldo no disponibles');
-        }
-
-        console.log(`[Plan B - Imágenes] ✓ Cargadas ${FALLBACK_IMAGES.length} imágenes locales`);
-        AppState.usingFallback.images = true;
-        return FALLBACK_IMAGES;
-
-    } catch (error) {
-        console.error('[Plan B - Imágenes] ✗ Error:', error.message);
-        return [];
-    }
-}
-
 async function fetchImages() {
     try {
         return await fetchImagesFromUnsplash();
     } catch (error) {
         console.log('[Circuit Breaker - Imágenes] Activando Plan B...');
-        return await fetchImagesFromLocal();
+        console.log('[Circuit Breaker - Imágenes] Nota: Las imágenes no se usan en el diseño actual');
+        return [];
     }
 }
 
@@ -246,33 +227,21 @@ async function fetchQuotes() {
 }
 
 // ========================================
-// CREACIÓN DE SECCIONES (1 IMAGEN + 1 FRASE)
+// CREACIÓN DE SECCIONES
 // ========================================
 
 /**
- * Empareja cada imagen con una frase (1:1) MANTENIENDO EL ORDEN ORIGINAL
- * El orden de las citas determina el orden del poema
+ * Crea secciones con versos del poema
  */
-function createSections(images, quotes) {
-    console.log('[Sections] Creando pares imagen+frase en orden...');
+function createSections(quotes) {
+    console.log('[Sections] Creando secciones con versos...');
 
-    const sections = [];
+    const sections = quotes.map(quote => ({
+        type: 'quote',
+        quote: quote
+    }));
 
-    // NO mezclar - mantener el orden original del poema
-    // Las citas están en orden del verso 1 al 22
-    // Las imágenes están en orden correspondiente a cada verso
-
-    // Determinar el número de secciones (usar el menor de los dos)
-    const count = Math.min(images.length, quotes.length);
-
-    for (let i = 0; i < count; i++) {
-        sections.push({
-            image: images[i],
-            quote: quotes[i]
-        });
-    }
-
-    console.log(`[Sections] ✓ Creadas ${sections.length} secciones en orden`);
+    console.log(`[Sections] ✓ Creadas ${sections.length} secciones`);
     return sections;
 }
 
@@ -399,9 +368,9 @@ function generateShapesHTML(index) {
 
 /**
  * Crea el HTML de una sección fullscreen con fondo degradado y figuras animadas
- * Solo muestra autor y fuente en la última sección (cierre del poema)
+ * Solo muestra autor y fuente en el último verso
  */
-function createFullscreenSection(sectionData, index, totalSections) {
+function createFullscreenSection(sectionData, index, totalSections, sections) {
     const section = document.createElement('section');
     section.className = 'fullscreen-section';
     section.dataset.index = index;
@@ -409,10 +378,10 @@ function createFullscreenSection(sectionData, index, totalSections) {
 
     const { quote } = sectionData;
 
-    // Solo mostrar autor y fuente en la última sección
-    const isLastSection = index === totalSections - 1;
+    // El último verso es el último slide (sections.length - 1)
+    const isLastQuote = index === sections.length - 1;
 
-    const authorHTML = isLastSection
+    const authorHTML = isLastQuote
         ? `<cite class="section__quote-author">— ${quote.autor}</cite>
            <p class="section__quote-source">${quote.fuente}</p>`
         : '';
@@ -420,13 +389,49 @@ function createFullscreenSection(sectionData, index, totalSections) {
     // Seleccionar degradado (rotar entre 5 variantes)
     const gradientIndex = (index % 5) + 1;
 
+    // Mapeo de slides con imágenes de fondo
+    const slideBackgroundImages = {
+        0: 'assets/img/slide-13.jpg',  // Slide 1
+        2: 'assets/img/slide-10.jpg',  // Slide 3
+        4: 'assets/img/slide-4.jpg',   // Slide 5
+        6: 'assets/img/slide-12.jpg',  // Slide 7
+        8: 'assets/img/slide-2.jpg',   // Slide 9
+        10: 'assets/img/slide-19.jpg', // Slide 11
+        12: 'assets/img/slide-8.jpg',  // Slide 13
+        14: 'assets/img/slide-11.jpg', // Slide 15
+        16: 'assets/img/slide-6.jpg',  // Slide 17
+        18: 'assets/img/slide-15.jpg', // Slide 19
+        20: 'assets/img/slide-17.jpg'  // Slide 21
+    };
+
+    // Agregar imagen de fondo si este slide tiene una asignada
+    let backgroundImageHTML = '';
+    if (slideBackgroundImages[index]) {
+        let bgPosition = 'center';
+        if (index === 14) {
+            bgPosition = 'center 65%';  // Slide 15: desplazar un poco hacia abajo
+        } else if (index === 20) {
+            bgPosition = 'center 70%';  // Slide 21: desplazar 30% hacia arriba desde bottom
+        }
+        backgroundImageHTML = `<div class="section__background-image" style="background-image: url('${slideBackgroundImages[index]}'); background-position: ${bgPosition};"></div>`;
+    }
+
+    // Agregar clase especial para hacer el gradiente semi-transparente
+    let backgroundClass = `section__background section__background--gradient-${gradientIndex}`;
+    if (slideBackgroundImages[index]) {
+        backgroundClass += ' section__background--with-image';
+        if (index === 20) {
+            backgroundClass += ' section__background--diagonal-fade';  // Slide 21: degradado diagonal
+        }
+    }
+
     section.innerHTML = `
-        <div class="section__background section__background--gradient-${gradientIndex}">
+        ${backgroundImageHTML}
+        <div class="${backgroundClass}">
             <div class="animated-shapes">
                 ${generateShapesHTML(index)}
             </div>
         </div>
-        <div class="section__overlay"></div>
         <div class="section__content">
             <div class="section__quote">
                 <blockquote class="section__quote-text">
@@ -453,7 +458,7 @@ function renderSections(sections) {
     const totalSections = sections.length;
 
     sections.forEach((sectionData, index) => {
-        const section = createFullscreenSection(sectionData, index, totalSections);
+        const section = createFullscreenSection(sectionData, index, totalSections, sections);
         fragment.appendChild(section);
     });
 
@@ -470,13 +475,16 @@ function renderSections(sections) {
  * Navega a una sección específica
  */
 function navigateToSection(index) {
-    const container = document.getElementById('fullscreenContainer');
-    const sections = container.querySelectorAll('.fullscreen-section');
+    if (!AppState.dom.container) return;
+
+    const sections = AppState.dom.container.querySelectorAll('.fullscreen-section');
 
     if (index < 0 || index >= sections.length) {
         return;
     }
 
+    // Activar flag de navegación para prevenir detección durante scroll
+    AppState.isNavigating = true;
     AppState.currentIndex = index;
 
     // Scroll a la sección
@@ -490,6 +498,11 @@ function navigateToSection(index) {
 
     // Actualizar estado de botones
     updateNavigationButtons();
+
+    // Desactivar flag después de que complete la animación de scroll
+    setTimeout(() => {
+        AppState.isNavigating = false;
+    }, 1000); // 1s es suficiente para que termine el smooth scroll
 }
 
 /**
@@ -516,12 +529,9 @@ function navigatePrev() {
  * Actualiza el contador de navegación
  */
 function updateNavigationCounter() {
-    const currentEl = document.querySelector('.nav-counter__current');
-    const totalEl = document.querySelector('.nav-counter__total');
-
-    if (currentEl && totalEl) {
-        currentEl.textContent = AppState.currentIndex + 1;
-        totalEl.textContent = AppState.totalSections;
+    if (AppState.dom.navCounterCurrent && AppState.dom.navCounterTotal) {
+        AppState.dom.navCounterCurrent.textContent = AppState.currentIndex + 1;
+        AppState.dom.navCounterTotal.textContent = AppState.totalSections;
     }
 }
 
@@ -529,15 +539,12 @@ function updateNavigationCounter() {
  * Actualiza el estado de los botones (disabled si estamos al inicio/final)
  */
 function updateNavigationButtons() {
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-
-    if (prevBtn) {
-        prevBtn.disabled = AppState.currentIndex === 0;
+    if (AppState.dom.prevBtn) {
+        AppState.dom.prevBtn.disabled = AppState.currentIndex === 0;
     }
 
-    if (nextBtn) {
-        nextBtn.disabled = AppState.currentIndex === AppState.totalSections - 1;
+    if (AppState.dom.nextBtn) {
+        AppState.dom.nextBtn.disabled = AppState.currentIndex === AppState.totalSections - 1;
     }
 }
 
@@ -545,8 +552,12 @@ function updateNavigationButtons() {
  * Detecta el índice actual basado en la posición del scroll
  */
 function detectCurrentSection() {
-    const container = document.getElementById('fullscreenContainer');
-    const sections = container.querySelectorAll('.fullscreen-section');
+    // No detectar durante navegación programática (botones/teclado)
+    if (AppState.isNavigating || !AppState.dom.container) {
+        return;
+    }
+
+    const sections = AppState.dom.container.querySelectorAll('.fullscreen-section');
 
     let currentIndex = 0;
     let minDistance = Infinity;
@@ -574,18 +585,22 @@ function detectCurrentSection() {
 function setupNavigation() {
     console.log('[Navigation] Configurando controles...');
 
-    const container = document.getElementById('fullscreenContainer');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+    // Cachear elementos DOM
+    AppState.dom.container = document.getElementById('fullscreenContainer');
+    AppState.dom.prevBtn = document.getElementById('prevBtn');
+    AppState.dom.nextBtn = document.getElementById('nextBtn');
+    AppState.dom.navCounterCurrent = document.querySelector('.nav-counter__current');
+    AppState.dom.navCounterTotal = document.querySelector('.nav-counter__total');
+
     const scrollHint = document.getElementById('scrollHint');
 
     // Botones de navegación
-    if (prevBtn) {
-        prevBtn.addEventListener('click', navigatePrev);
+    if (AppState.dom.prevBtn) {
+        AppState.dom.prevBtn.addEventListener('click', navigatePrev);
     }
 
-    if (nextBtn) {
-        nextBtn.addEventListener('click', navigateNext);
+    if (AppState.dom.nextBtn) {
+        AppState.dom.nextBtn.addEventListener('click', navigateNext);
     }
 
     // Navegación con teclado
@@ -602,8 +617,8 @@ function setupNavigation() {
     }
 
     // Detectar sección actual en scroll
-    if (container) {
-        container.addEventListener('scroll', () => {
+    if (AppState.dom.container) {
+        AppState.dom.container.addEventListener('scroll', () => {
             detectCurrentSection();
 
             // Ocultar hint al hacer scroll
@@ -742,21 +757,19 @@ async function init() {
     try {
         // Fase 1: Obtener datos
         console.log('[App] Fase 1: Obteniendo datos...');
-        const [images, quotes] = await Promise.allSettled([
-            fetchImages(),
+        const [quotes] = await Promise.allSettled([
             fetchQuotes()
         ]);
 
-        AppState.images = images.status === 'fulfilled' ? images.value : [];
         AppState.quotes = quotes.status === 'fulfilled' ? quotes.value : [];
 
-        if (AppState.images.length === 0 || AppState.quotes.length === 0) {
+        if (AppState.quotes.length === 0) {
             throw new Error('No hay suficiente contenido disponible');
         }
 
-        // Fase 2: Crear secciones (1 imagen + 1 frase)
+        // Fase 2: Crear secciones con versos del poema
         console.log('[App] Fase 2: Creando secciones...');
-        AppState.sections = createSections(AppState.images, AppState.quotes);
+        AppState.sections = createSections(AppState.quotes);
         AppState.totalSections = AppState.sections.length;
 
         // Fase 3: Renderizar
@@ -810,13 +823,62 @@ async function init() {
 }
 
 // ========================================
+// PROTECCIÓN DE IMÁGENES
+// ========================================
+
+/**
+ * Previene descarga de imágenes mediante varios métodos
+ */
+function setupImageProtection() {
+    // Prevenir click derecho en todo el documento
+    document.addEventListener('contextmenu', (e) => {
+        // Permitir click derecho solo en inputs y textareas
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // Prevenir arrastrar imágenes
+    document.addEventListener('dragstart', (e) => {
+        if (e.target.classList.contains('section__background-image')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // Prevenir copiar imágenes con Ctrl+C
+    document.addEventListener('copy', (e) => {
+        const selection = window.getSelection();
+        if (selection && selection.toString().length === 0) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // Prevenir guardar imagen con teclado (Ctrl+S)
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    console.log('[Protection] ✓ Protección de imágenes activada');
+}
+
+// ========================================
 // PUNTO DE ENTRADA
 // ========================================
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+        init();
+        setupImageProtection();
+    });
 } else {
     init();
+    setupImageProtection();
 }
 
 console.log('=================================');
