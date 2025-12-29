@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Sparkle grande -->
+  <g transform="translate(50, 35)">
+    <!-- Estrella de 4 puntas con más relleno -->
+    <path d="M 0,-28 L 5,-8 L 8,-5 L 28,0 L 8,5 L 5,8 L 0,28 L -5,8 L -8,5 L -28,0 L -8,-5 L -5,-8 Z"
+          fill="#FFD700"/>
+  </g>
+
+  <!-- Sparkle mediano -->
+  <g transform="translate(20, 70)">
+    <path d="M 0,-20 L 4,-6 L 6,-4 L 20,0 L 6,4 L 4,6 L 0,20 L -4,6 L -6,4 L -20,0 L -6,-4 L -4,-6 Z"
+          fill="#FFC700"/>
+  </g>
+
+  <!-- Sparkle pequeño -->
+  <g transform="translate(78, 68)">
+    <path d="M 0,-14 L 3,-4 L 4,-3 L 14,0 L 4,3 L 3,4 L 0,14 L -3,4 L -4,3 L -14,0 L -4,-3 L -3,-4 Z"
+          fill="#FFEB3B"/>
+  </g>
+</svg>
