@@ -288,10 +288,16 @@ function getShapePositions(index, shapeType, shapeNumber) {
  * Varía las figuras según el índice para crear diversidad visual
  */
 function generateShapesHTML(index) {
+    // No mostrar figuras en el primer slide (intro)
+    if (index === 0) {
+        return '';
+    }
+
     const shapes = [];
 
     // Calcular qué combinación de figuras mostrar (varía cada 3 secciones)
-    const patternIndex = index % 6;
+    // Ajustar índice para que empiece desde 0 en el slide 2
+    const patternIndex = (index - 1) % 6;
 
     // Corazones (3 por sección) - opacidad aumentada en +0.1 (0.7-0.8)
     if (patternIndex === 0 || patternIndex === 2 || patternIndex === 4) {
@@ -381,37 +387,43 @@ function createFullscreenSection(sectionData, index, totalSections, sections) {
     // El último verso es el último slide (sections.length - 1)
     const isLastQuote = index === sections.length - 1;
 
+    // Detectar si es el slide introductorio
+    const isIntroSlide = index === 0;
+
     const authorHTML = isLastQuote
         ? `<cite class="section__quote-author">— ${quote.autor}</cite>
-           <p class="section__quote-source">${quote.fuente}</p>`
+           <p class="section__quote-source">Poema: ${quote.fuente}</p>
+           ${quote.libro ? `<p class="section__quote-book">Libro: ${quote.libro}</p>` : ''}`
         : '';
 
-    // Seleccionar degradado (rotar entre 5 variantes)
-    const gradientIndex = (index % 5) + 1;
+    // Seleccionar degradado
+    // Si es intro, usar degradado especial; si no, rotar entre 5 variantes desde el slide 2
+    const gradientIndex = isIntroSlide ? 'intro' : ((index - 1) % 5) + 1;
 
     // Mapeo de slides con imágenes de fondo
     const slideBackgroundImages = {
-        0: 'assets/img/slide-13.jpg',  // Slide 1
-        2: 'assets/img/slide-10.jpg',  // Slide 3
-        4: 'assets/img/slide-4.jpg',   // Slide 5
-        6: 'assets/img/slide-12.jpg',  // Slide 7
-        8: 'assets/img/slide-2.jpg',   // Slide 9
-        10: 'assets/img/slide-19.jpg', // Slide 11
-        12: 'assets/img/slide-8.jpg',  // Slide 13
-        14: 'assets/img/slide-11.jpg', // Slide 15
-        16: 'assets/img/slide-6.jpg',  // Slide 17
-        18: 'assets/img/slide-15.jpg', // Slide 19
-        20: 'assets/img/slide-17.jpg'  // Slide 21
+        1: 'assets/img/slide-13.jpg',  // Slide 2 (primer verso)
+        3: 'assets/img/slide-10.jpg',  // Slide 4
+        5: 'assets/img/slide-4.jpg',   // Slide 6
+        7: 'assets/img/slide-12.jpg',  // Slide 8
+        9: 'assets/img/slide-2.jpg',   // Slide 10
+        11: 'assets/img/slide-19.jpg', // Slide 12
+        13: 'assets/img/slide-16.jpg', // Slide 14
+        15: 'assets/img/slide-11.jpg', // Slide 16
+        17: 'assets/img/slide-6.jpg',  // Slide 18
+        19: 'assets/img/slide-15.jpg', // Slide 20
+        21: 'assets/img/slide-17.jpg', // Slide 22
+        23: 'assets/img/slide-1.jpg'   // Slide 24
     };
 
     // Agregar imagen de fondo si este slide tiene una asignada
     let backgroundImageHTML = '';
     if (slideBackgroundImages[index]) {
         let bgPosition = 'center';
-        if (index === 14) {
-            bgPosition = 'center 65%';  // Slide 15: desplazar un poco hacia abajo
-        } else if (index === 20) {
-            bgPosition = 'center 70%';  // Slide 21: desplazar 30% hacia arriba desde bottom
+        if (index === 15) {
+            bgPosition = 'center 65%';  // Slide 16: desplazar un poco hacia abajo
+        } else if (index === 21) {
+            bgPosition = 'center 70%';  // Slide 22: desplazar 30% hacia arriba desde bottom
         }
         backgroundImageHTML = `<div class="section__background-image" style="background-image: url('${slideBackgroundImages[index]}'); background-position: ${bgPosition};"></div>`;
     }
@@ -420,8 +432,8 @@ function createFullscreenSection(sectionData, index, totalSections, sections) {
     let backgroundClass = `section__background section__background--gradient-${gradientIndex}`;
     if (slideBackgroundImages[index]) {
         backgroundClass += ' section__background--with-image';
-        if (index === 20) {
-            backgroundClass += ' section__background--diagonal-fade';  // Slide 21: degradado diagonal
+        if (index === 21) {
+            backgroundClass += ' section__background--diagonal-fade';  // Slide 22: degradado diagonal
         }
     }
 
@@ -433,8 +445,8 @@ function createFullscreenSection(sectionData, index, totalSections, sections) {
             </div>
         </div>
         <div class="section__content">
-            <div class="section__quote">
-                <blockquote class="section__quote-text">
+            <div class="section__quote ${isIntroSlide ? 'section__quote--intro' : ''}">
+                <blockquote class="section__quote-text ${isIntroSlide ? 'section__quote-text--intro' : ''}">
                     ${quote.texto}
                 </blockquote>
                 ${authorHTML}
@@ -498,6 +510,15 @@ function navigateToSection(index) {
 
     // Actualizar estado de botones
     updateNavigationButtons();
+
+    // Mostrar controles de audio si llegamos al último slide
+    if (index === AppState.totalSections - 1) {
+        setTimeout(() => {
+            if (typeof window.showAudioControls === 'function') {
+                window.showAudioControls();
+            }
+        }, 500); // Esperar un poco para que se complete la navegación
+    }
 
     // Desactivar flag después de que complete la animación de scroll
     setTimeout(() => {
@@ -576,6 +597,16 @@ function detectCurrentSection() {
         AppState.currentIndex = currentIndex;
         updateNavigationCounter();
         updateNavigationButtons();
+
+        // Mostrar controles de audio cuando se llega al último slide
+        if (currentIndex === AppState.totalSections - 1) {
+            console.log('[Navigation] Último slide alcanzado, mostrando controles de audio');
+            if (typeof window.showAudioControls === 'function') {
+                window.showAudioControls();
+            } else {
+                console.warn('[Navigation] showAudioControls no está disponible aún');
+            }
+        }
     }
 }
 
@@ -621,17 +652,23 @@ function setupNavigation() {
         AppState.dom.container.addEventListener('scroll', () => {
             detectCurrentSection();
 
-            // Ocultar hint al hacer scroll
-            if (scrollHint && !scrollHint.classList.contains('hidden')) {
-                scrollHint.classList.add('hidden');
+            // Mostrar/ocultar hint: solo visible en el primer slide
+            if (scrollHint) {
+                if (AppState.currentIndex === 0) {
+                    scrollHint.classList.remove('hidden');
+                } else {
+                    scrollHint.classList.add('hidden');
+                }
             }
         });
     }
 
-    // Ocultar hint automáticamente después de X segundos
+    // Ocultar hint automáticamente después de X segundos (solo en el primer slide)
     if (scrollHint) {
         setTimeout(() => {
-            scrollHint.classList.add('hidden');
+            if (AppState.currentIndex === 0) {
+                scrollHint.classList.add('hidden');
+            }
         }, CONFIG.navigation.scrollHintDuration);
     }
 
@@ -704,16 +741,57 @@ function setupCustomCursor() {
 }
 
 // ========================================
+// FADE DE TEXTO POR SECCIÓN
+// ========================================
+
+/**
+ * Configura el fade del texto cuando cada sección entra en el viewport
+ */
+function setupTextFadeObserver() {
+    const sections = document.querySelectorAll('.fullscreen-section');
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.5 // El fade se activa cuando el 50% de la sección es visible
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const quote = entry.target.querySelector('.section__quote');
+            if (quote) {
+                if (entry.isIntersecting) {
+                    // Activar fade cuando la sección es visible
+                    setTimeout(() => {
+                        quote.classList.add('fade-in');
+                    }, 200); // Pequeño delay para efecto suave
+                } else {
+                    // Remover la clase cuando sale del viewport para que se reactive al volver
+                    quote.classList.remove('fade-in');
+                }
+            }
+        });
+    }, observerOptions);
+
+    // Observar todas las secciones
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+
+    console.log('[TextFade] ✓ Observer de fade de texto inicializado');
+}
+
+// ========================================
 // UTILIDADES DE UI
 // ========================================
 
 function hideSplashScreen() {
     const splash = document.getElementById('splashScreen');
     if (splash) {
-        // Esperar un mínimo de 2 segundos para que se vea la animación completa
+        // Esperar un mínimo de 3 segundos para que se vea la animación completa
         setTimeout(() => {
             splash.classList.add('hidden');
-        }, 2000);
+        }, 3000);
     }
 }
 
@@ -778,13 +856,25 @@ async function init() {
 
         // Fase 4: Configurar navegación
         console.log('[App] Fase 4: Configurando navegación...');
+        setupNavigation();
         updateNavigationCounter();
         updateNavigationButtons();
-        setupNavigation();
 
         // Fase 5: Cursor personalizado
         console.log('[App] Fase 5: Inicializando cursor...');
         setupCustomCursor();
+
+        // Fase 6: Fade de texto por sección
+        console.log('[App] Fase 6: Configurando fade de texto...');
+        setupTextFadeObserver();
+
+        // Fase 7: Música de fondo
+        console.log('[App] Fase 7: Configurando música de fondo...');
+        const audioElement = setupBackgroundMusic();
+
+        // Fase 8: Controles de audio
+        console.log('[App] Fase 8: Configurando controles de audio...');
+        setupAudioControls(audioElement);
 
         // Ocultar splash screen y loading
         hideSplashScreen();
@@ -865,6 +955,234 @@ function setupImageProtection() {
     });
 
     console.log('[Protection] ✓ Protección de imágenes activada');
+}
+
+// ========================================
+// MÚSICA DE FONDO
+// ========================================
+
+/**
+ * Configura y activa la música de fondo con fade in
+ */
+function setupBackgroundMusic() {
+    const audio = document.getElementById('backgroundMusic');
+
+    if (!audio) {
+        console.warn('[Music] Elemento de audio no encontrado');
+        return;
+    }
+
+    // Configuración inicial
+    audio.loop = true;                // Loop infinito
+    audio.volume = 0;                 // Empezar en silencio
+    audio.playbackRate = 0.88;        // Velocidad al 88%
+
+    let musicStarted = false;
+    let fadeOutInterval = null;
+    let fadeInInterval = null;
+    const targetVolume = 0.25;        // Volumen máximo del 25%
+    const fadeInDuration = 10000;     // Duración del fade in en ms (10 segundos)
+    const fadeInSteps = 100;          // Número de pasos para el fade
+    const stepDuration = fadeInDuration / fadeInSteps;
+    const volumeIncrement = targetVolume / fadeInSteps;
+    const crossfadeSeconds = 10;      // Segundos de crossfade al final/inicio
+
+    /**
+     * Inicia la música con fade in gradual
+     */
+    function startMusicWithFadeIn() {
+        if (musicStarted) return;
+        musicStarted = true;
+
+        // Intentar reproducir
+        audio.play().then(() => {
+            console.log('[Music] ✓ Música de fondo iniciada');
+
+            // Fade in gradual
+            let currentStep = 0;
+            const fadeInterval = setInterval(() => {
+                currentStep++;
+                audio.volume = Math.min(volumeIncrement * currentStep, targetVolume);
+
+                if (currentStep >= fadeInSteps) {
+                    clearInterval(fadeInterval);
+                    audio.volume = targetVolume;
+                    console.log('[Music] ✓ Fade in completado');
+                }
+            }, stepDuration);
+
+        }).catch(err => {
+            console.log('[Music] Esperando interacción del usuario para iniciar audio');
+            musicStarted = false;
+        });
+    }
+
+    // Eventos que activan la música (cualquier interacción)
+    const interactionEvents = ['click', 'scroll', 'keydown', 'touchstart', 'wheel'];
+
+    interactionEvents.forEach(eventType => {
+        document.addEventListener(eventType, startMusicWithFadeIn, { once: true });
+    });
+
+    // Activar también con los botones de navegación específicamente
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', startMusicWithFadeIn, { once: true });
+    });
+
+    // Activar con el contenedor de scroll
+    const container = document.getElementById('fullscreenContainer');
+    if (container) {
+        container.addEventListener('scroll', startMusicWithFadeIn, { once: true });
+    }
+
+    // Sistema de crossfade mejorado
+    let lastTime = 0;
+    let crossfadeStarted = false;
+
+    audio.addEventListener('timeupdate', () => {
+        if (!musicStarted || !audio.duration) return;
+
+        const timeLeft = audio.duration - audio.currentTime;
+        const currentTime = audio.currentTime;
+
+        // Detectar si el loop se reinició
+        if (currentTime < lastTime && lastTime > 0) {
+            // Loop reiniciado - limpiar intervals y resetear
+            if (fadeOutInterval) {
+                clearInterval(fadeOutInterval);
+                fadeOutInterval = null;
+            }
+            if (fadeInInterval) {
+                clearInterval(fadeInInterval);
+                fadeInInterval = null;
+            }
+            crossfadeStarted = false;
+
+            // Fade in rápido al inicio del loop
+            let currentVol = 0;
+            audio.volume = 0;
+            const quickFadeSteps = 50;
+            const quickFadeDuration = 3000; // 3 segundos
+            const quickStepDuration = quickFadeDuration / quickFadeSteps;
+            const quickVolIncrement = targetVolume / quickFadeSteps;
+
+            fadeInInterval = setInterval(() => {
+                currentVol += quickVolIncrement;
+                if (currentVol >= targetVolume) {
+                    audio.volume = targetVolume;
+                    clearInterval(fadeInInterval);
+                    fadeInInterval = null;
+                } else {
+                    audio.volume = currentVol;
+                }
+            }, quickStepDuration);
+        }
+
+        // Iniciar crossfade cuando queden X segundos
+        if (timeLeft <= crossfadeSeconds && timeLeft > 0 && !crossfadeStarted) {
+            crossfadeStarted = true;
+
+            // Fade out gradual hasta casi cero
+            const fadeSteps = 120; // Muchos pasos para transición suave
+            const fadeDuration = crossfadeSeconds * 1000;
+            const fadeStepDuration = fadeDuration / fadeSteps;
+            let currentVol = audio.volume;
+            const volDecrement = currentVol / fadeSteps;
+
+            fadeOutInterval = setInterval(() => {
+                currentVol = Math.max(0, currentVol - volDecrement);
+                audio.volume = currentVol;
+
+                if (currentVol <= 0) {
+                    clearInterval(fadeOutInterval);
+                    fadeOutInterval = null;
+                }
+            }, fadeStepDuration);
+        }
+
+        lastTime = currentTime;
+    });
+
+    console.log('[Music] ✓ Sistema de música de fondo configurado');
+
+    // Retornar el elemento de audio para uso en controles
+    return audio;
+}
+
+// ========================================
+// CONTROLES DE AUDIO
+// ========================================
+
+/**
+ * Configura los controles de audio (play/pause, mute)
+ */
+function setupAudioControls(audioElement) {
+    const audioControls = document.getElementById('audioControls');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const muteBtn = document.getElementById('muteBtn');
+
+    if (!audioControls || !playPauseBtn || !muteBtn || !audioElement) {
+        console.warn('[AudioControls] Elementos no encontrados');
+        return;
+    }
+
+    // Guardar referencia para uso global
+    window.audioControlsElement = audioControls;
+    window.audioControlsVisible = false;
+
+    // Función global para mostrar los controles
+    window.showAudioControls = function() {
+        if (!window.audioControlsVisible && window.audioControlsElement) {
+            window.audioControlsElement.classList.add('visible');
+            window.audioControlsVisible = true;
+            console.log('[AudioControls] ✓ Controles mostrados en último slide');
+        }
+    };
+
+    // Play/Pause
+    playPauseBtn.addEventListener('click', () => {
+        if (audioElement.paused) {
+            audioElement.play();
+            playPauseBtn.classList.add('playing');
+        } else {
+            audioElement.pause();
+            playPauseBtn.classList.remove('playing');
+        }
+    });
+
+    // Mute/Unmute
+    let previousVolume = audioElement.volume;
+    muteBtn.addEventListener('click', () => {
+        if (audioElement.muted) {
+            audioElement.muted = false;
+            audioElement.volume = previousVolume;
+            muteBtn.classList.remove('muted');
+        } else {
+            previousVolume = audioElement.volume;
+            audioElement.muted = true;
+            muteBtn.classList.add('muted');
+        }
+    });
+
+    // Sincronizar estado del botón con el audio
+    const updatePlayPauseState = () => {
+        if (!audioElement.paused) {
+            playPauseBtn.classList.add('playing');
+        } else {
+            playPauseBtn.classList.remove('playing');
+        }
+    };
+
+    // Actualizar estado cuando el audio empieza o se pausa
+    audioElement.addEventListener('play', updatePlayPauseState);
+    audioElement.addEventListener('pause', updatePlayPauseState);
+    audioElement.addEventListener('playing', updatePlayPauseState);
+
+    // Sincronizar estado inicial
+    updatePlayPauseState();
+
+    console.log('[AudioControls] ✓ Controles de audio configurados');
 }
 
 // ========================================
