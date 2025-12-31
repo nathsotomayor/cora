@@ -12,6 +12,14 @@
  */
 
 const FALLBACK_QUOTES = [
+    // SECCIÓN 0: INTRODUCCIÓN
+    {
+        id: "intro",
+        autor: "",
+        fuente: "",
+        texto: `Ella`
+    },
+
     // SECCIÓN 1: LA APARICIÓN
     {
         id: "verso_01",
@@ -225,15 +233,23 @@ y ya me relamo los dedos para guardarte,`
 y te quiero conmigo en cada esquina.`
     },
 
-    // SECCIÓN 22: LA INVITACIÓN FINAL
+    // SECCIÓN 22: LA INVITACIÓN FINAL - PARTE 1
     {
-        id: "verso_22",
+        id: "verso_22_1",
         autor: "Elvira Sastre",
         fuente: "Quiero hacer contigo",
         texto: `Si la palabra es acción
 entonces ven a contarme el amor,
-que quiero hacer contigo
-todo lo que la poesía aún no ha escrito.`
+que quiero hacer contigo`
+    },
+
+    // SECCIÓN 23: LA INVITACIÓN FINAL - PARTE 2
+    {
+        id: "verso_22_2",
+        autor: "Elvira Sastre",
+        fuente: "Quiero hacer contigo todo lo que la poesía aún no ha escrito",
+        texto: `todo lo que la poesía
+aún no ha escrito.`
     }
 ];
 
