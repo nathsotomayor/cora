@@ -1,5 +1,11 @@
 [
   {
+    "id": "intro",
+    "autor": "",
+    "fuente": "",
+    "texto": "Ella"
+  },
+  {
     "id": "verso_01",
     "autor": "Elvira Sastre",
     "fuente": "Quiero hacer contigo",
@@ -126,9 +132,15 @@
     "texto": "paseo por <del>Madrid</del> Medellín :)\ny te quiero conmigo en cada esquina."
   },
   {
-    "id": "verso_22",
+    "id": "verso_22_1",
     "autor": "Elvira Sastre",
     "fuente": "Quiero hacer contigo",
-    "texto": "Si la palabra es acción\nentonces ven a contarme el amor,\nque quiero hacer contigo\ntodo lo que la poesía aún no ha escrito."
+    "texto": "Si la palabra es acción\nentonces ven a contarme el amor,\nque quiero hacer contigo"
+  },
+  {
+    "id": "verso_22_2",
+    "autor": "Elvira Sastre",
+    "fuente": "Quiero hacer contigo",
+    "texto": "todo lo que la poesía\naún no ha escrito."
   }
 ]
