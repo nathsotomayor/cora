@@ -340,12 +340,12 @@ a:hover, a:focus {
     opacity: 1 !important;
 }
 
-/* Degradado especial para slide introductorio - Estilo retro amarillo/azul */
+/* Degradado especial para slide introductorio - Estilo retro rosa/azul */
 .section__background--gradient-intro {
     background: linear-gradient(135deg,
-        #ffd700 0%,          /* Amarillo dorado */
-        #ffeb3b 15%,         /* Amarillo brillante */
-        #ffa726 30%,         /* Naranja amarillento - fin del amarillo */
+        #E8A8C8 0%,          /* Rosa suave (color de comillas) */
+        #F5B8D8 15%,         /* Rosa más claro */
+        #D89BC7 30%,         /* Rosa medio - fin del rosa */
         #00d4ff 50%,         /* Azul celeste eléctrico */
         #0099ff 70%,         /* Azul cielo */
         #00b4d8 85%,         /* Azul celeste */
@@ -362,12 +362,24 @@ a:hover, a:focus {
     right: 0;
     bottom: 0;
     background: radial-gradient(ellipse at 30% 30%,
-        rgba(255, 215, 0, 0.5) 0%,     /* Amarillo dorado más visible */
-        rgba(255, 193, 7, 0.35) 25%,   /* Amarillo suave */
-        rgba(255, 152, 0, 0.2) 45%,    /* Naranja amarillento */
+        rgba(232, 168, 200, 0.5) 0%,   /* Rosa suave más visible */
+        rgba(245, 184, 216, 0.35) 25%, /* Rosa claro */
+        rgba(216, 155, 199, 0.2) 45%,  /* Rosa medio */
         transparent 70%
     );
     pointer-events: none;
+}
+
+.section__background--gradient-intro::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(10, 9, 19, 0.5); /* Capa oscura semi-transparente */
+    pointer-events: none;
+    z-index: 1;
 }
 
 /* Degradados variados para cada sección */
@@ -644,18 +656,18 @@ a:hover, a:focus {
 
 .section__quote-text--intro {
     font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 5rem;
-    font-weight: 500;
+    font-size: 1.75rem;
+    font-weight: 400;
     font-style: normal;
-    letter-spacing: 0.08em;
-    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    text-transform: none;
     color: #f5f5f5;  /* Blanco cálido suave */
     text-shadow:
-        0 0 20px rgba(255, 255, 255, 0.4),
-        0 0 40px rgba(0, 180, 216, 0.2),
-        0 4px 8px rgba(0, 0, 0, 0.6);
+        0 0 15px rgba(255, 255, 255, 0.3),
+        0 0 30px rgba(0, 180, 216, 0.15),
+        0 2px 6px rgba(0, 0, 0, 0.5);
     margin-bottom: 0;
-    line-height: 1.2;
+    line-height: 1.8;
     position: relative;
     animation: retro-glow 3s ease-in-out infinite;
 }
@@ -965,7 +977,8 @@ a:hover, a:focus {
     }
 
     .section__quote-text--intro {
-        font-size: 3.5rem;
+        font-size: 1.5rem;
+        line-height: 1.7;
     }
 
     .nav-controls {
@@ -1006,8 +1019,9 @@ a:hover, a:focus {
     }
 
     .section__quote-text--intro {
-        font-size: 2.5rem;
-        letter-spacing: 0.05em;
+        font-size: 1.125rem;
+        line-height: 1.6;
+        letter-spacing: 0.01em;
     }
 
     .section__photo-credit {
