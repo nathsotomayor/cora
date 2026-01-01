@@ -403,16 +403,27 @@ function createFullscreenSection(sectionData, index, totalSections, sections) {
     // Mapeo de slides con imágenes de fondo
     const slideBackgroundImages = {
         1: 'assets/img/slide-13.jpg',  // Slide 2 (primer verso)
+        2: 'assets/img/slide-23.jpg',  // Slide 3
         3: 'assets/img/slide-10.jpg',  // Slide 4
+        4: 'assets/img/slide-14.jpg',  // Slide 5
         5: 'assets/img/slide-4.jpg',   // Slide 6
+        6: 'assets/img/slide-22.jpg',  // Slide 7
         7: 'assets/img/slide-12.jpg',  // Slide 8
+        8: 'assets/img/slide-9.jpg',   // Slide 9
         9: 'assets/img/slide-2.jpg',   // Slide 10
+        10: 'assets/img/slide-7.jpg',  // Slide 11
         11: 'assets/img/slide-19.jpg', // Slide 12
+        12: 'assets/img/slide-18.jpg', // Slide 13
         13: 'assets/img/slide-16.jpg', // Slide 14
+        14: 'assets/img/slide-8.jpg',  // Slide 15
         15: 'assets/img/slide-11.jpg', // Slide 16
+        16: 'assets/img/slide-3.jpg',  // Slide 17
         17: 'assets/img/slide-6.jpg',  // Slide 18
+        18: 'assets/img/slide-27.jpg', // Slide 19
         19: 'assets/img/slide-15.jpg', // Slide 20
+        20: 'assets/img/slide-25.jpg', // Slide 21
         21: 'assets/img/slide-17.jpg', // Slide 22
+        22: 'assets/img/slide-20.jpg', // Slide 23
         23: 'assets/img/slide-1.jpg'   // Slide 24
     };
 
@@ -420,10 +431,16 @@ function createFullscreenSection(sectionData, index, totalSections, sections) {
     let backgroundImageHTML = '';
     if (slideBackgroundImages[index]) {
         let bgPosition = 'center';
-        if (index === 15) {
+        if (index === 4) {
+            bgPosition = 'center bottom';  // Slide 5: alinear al extremo inferior
+        } else if (index === 12) {
+            bgPosition = 'right center';  // Slide 13: alinear al extremo derecho
+        } else if (index === 15) {
             bgPosition = 'center 65%';  // Slide 16: desplazar un poco hacia abajo
         } else if (index === 21) {
             bgPosition = 'center 70%';  // Slide 22: desplazar 30% hacia arriba desde bottom
+        } else if (index === 22) {
+            bgPosition = 'left center';  // Slide 23: alinear al extremo izquierdo
         }
         backgroundImageHTML = `<div class="section__background-image" style="background-image: url('${slideBackgroundImages[index]}'); background-position: ${bgPosition};"></div>`;
     }
@@ -1186,20 +1203,3 @@ function setupAudioControls(audioElement) {
 }
 
 // ========================================
-// PUNTO DE ENTRADA
-// ========================================
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        init();
-        setupImageProtection();
-    });
-} else {
-    init();
-    setupImageProtection();
-}
-
-console.log('=================================');
-console.log('INSTANTES COTIDIANOS');
-console.log('Experiencia inmersiva fullscreen');
-console.log('=================================');
