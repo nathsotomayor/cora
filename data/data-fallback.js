@@ -17,7 +17,16 @@ const FALLBACK_QUOTES = [
         id: "intro",
         autor: "",
         fuente: "",
-        texto: `Ella`
+        texto: `María Angélica,
+
+este es un pequeño universo
+hecho de versos prestados
+que te han encontrado.
+
+Ve con calma página a página.
+
+Esto es para ti
+con amor!`
     },
 
     // SECCIÓN 1: LA APARICIÓN
