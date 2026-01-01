@@ -1203,3 +1203,20 @@ function setupAudioControls(audioElement) {
 }
 
 // ========================================
+// PUNTO DE ENTRADA
+// ========================================
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        init();
+        setupImageProtection();
+    });
+} else {
+    init();
+    setupImageProtection();
+}
+
+console.log('=================================');
+console.log('INSTANTES COTIDIANOS');
+console.log('Experiencia inmersiva fullscreen');
+console.log('=================================');
